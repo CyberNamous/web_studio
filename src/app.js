@@ -26,13 +26,15 @@ import {
 /* Bootstrap                                                           */
 /* ------------------------------------------------------------------ */
 
+const MOBILE_QUERY = '(max-width: 760px)';
+
 const app = {
   settings: loadSettings(),
   project: null,
   editor: null,
   preview: null,
   terminal: null,
-  isMobile: window.matchMedia('(max-width: 760px)').matches
+  isMobile: window.matchMedia(MOBILE_QUERY).matches
 };
 
 export { APP_VERSION };
@@ -719,16 +721,20 @@ function switchMobileTab(name) {
     b.classList.toggle('active', b.dataset.mobileTab === name);
   });
   $('#terminal-panel').classList.toggle('visible', name === 'terminal' || app.settings.terminalVisible);
-  if (name === 'terminal') app.terminal?.fit();
-  if (name === 'editor') app.editor?.focus?.();
+  $('#app').classList.toggle('term-active', name === 'terminal');
+  if (name === 'terminal') { requestAnimationFrame(() => app.terminal?.fit()); }
+  if (name === 'editor') { window.dispatchEvent(new Event('resize')); }
+  if (name === 'preview' && app.project) runPreview();
+  mobileTab = name;
 }
+let mobileTab = 'editor';
 
 /* ------------------------------------------------------------------ */
 /* Init                                                                */
 /* ------------------------------------------------------------------ */
 
 function isMobileViewport() {
-  return window.matchMedia('(max-width: 760px)').matches;
+  return window.matchMedia(MOBILE_QUERY).matches;
 }
 
 function handleResize() {
@@ -737,6 +743,7 @@ function handleResize() {
     app.isMobile = mobile;
     setupSplits();
     if (mobile) switchMobileTab('editor');
+    else { $('#app').classList.remove('term-active'); document.querySelectorAll('.mobile-active').forEach((el) => el.classList.remove('mobile-active')); $('#terminal-panel').classList.toggle('visible', !!app.settings.terminalVisible); }
   } else {
     app.terminal?.fit();
   }
@@ -836,7 +843,9 @@ async function init() {
   $('#btn-terminal').addEventListener('click', () => {
     app.settings.terminalVisible = true;
     saveSettings(app.settings);
-    $('#terminal-panel').classList.add('visible', 'mobile-active');
+    $('#terminal-panel').classList.add('visible');
+    if (app.isMobile) { switchMobileTab('terminal'); return; }
+    $('#terminal-panel').classList.add('mobile-active');
     app.terminal.fit();
     app.terminal.focus();
   });
@@ -845,6 +854,7 @@ async function init() {
     app.settings.terminalVisible = false;
     saveSettings(app.settings);
     syncSettingsUI();
+    if (app.isMobile) switchMobileTab('editor');
   });
 
   /* Settings drawer */
@@ -929,6 +939,39 @@ async function init() {
 
   refreshIcons();
   setSaveStatus('saved');
+  setupMobileExtras();
+  if (app.isMobile) switchMobileTab('editor');
+}
+
+/* Mobile-only helpers: keyboard-aware height + code symbol bar */
+function setupMobileExtras() {
+  const vv = window.visualViewport;
+  const setVh = () => {
+    document.documentElement.style.setProperty('--vvh', (vv ? vv.height : window.innerHeight) + 'px');
+    if (vv) window.scrollTo(0, 0);
+  };
+  setVh();
+  vv?.addEventListener('resize', () => { setVh(); app.terminal?.fit(); });
+
+  const keys = [['Tab', '\t'], ['<', '<'], ['>', '>'], ['/', '/'], ['{', '{'], ['}', '}'], ['(', '('], [')', ')'],
+    ['[', '['], [']', ']'], ['"', '"'], ["'", "'"], ['=', '='], [';', ';'], [':', ':'], ['#', '#'], ['↶', 'undo'], ['↷', 'redo']];
+  const bar = $('#mobile-keys');
+  bar.innerHTML = keys.map(([l, v]) => `<button type="button" data-k="${escapeHtml(v)}">${escapeHtml(l)}</button>`).join('');
+  bar.addEventListener('pointerdown', (e) => e.preventDefault()); // keep editor focus/keyboard
+  bar.addEventListener('click', async (e) => {
+    const b = e.target.closest('button[data-k]');
+    const view = app.editor?.view;
+    if (!b || !view) return;
+    const k = b.dataset.k;
+    if (k === 'undo' || k === 'redo') {
+      const { undo, redo } = await import('@codemirror/commands');
+      (k === 'undo' ? undo : redo)(view);
+    } else {
+      const { from, to } = view.state.selection.main;
+      view.dispatch({ changes: { from, to, insert: k }, selection: { anchor: from + k.length }, scrollIntoView: true, userEvent: 'input' });
+    }
+    view.focus();
+  });
 }
 
 // Render icons that were added after initial load (tree rows, tabs).

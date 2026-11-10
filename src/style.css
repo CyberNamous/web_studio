@@ -69,6 +69,7 @@ svg.lucide { width: 16px; height: 16px; flex: none; }
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: var(--vvh, 100dvh);
 }
 
 /* Header */
@@ -213,7 +214,7 @@ svg.lucide { width: 16px; height: 16px; flex: none; }
 .tree-row-actions button:hover { color: var(--text); }
 
 .tree-children { padding-left: 16px; }
-.tree-folder.collapsed > .tree-children { display: none; }
+.tree-folder.collapsed > .tree-children, .tree-folder.collapsed + .tree-children { display: none; }
 
 .explorer-empty {
   color: var(--text-muted);
@@ -511,3 +512,89 @@ svg.lucide { width: 16px; height: 16px; flex: none; }
   flex: none;
 }
 .split-gutter:hover { background: var(--accent); }
+
+/* ============ Mobile workspace enhancements ============ */
+#mobile-keys { display: none; }
+
+@media (hover: none) {
+  .tree-row-actions { display: inline-flex; }
+}
+
+@media (max-width: 760px) {
+  html, body { overscroll-behavior: none; }
+  #app { padding-top: env(safe-area-inset-top); }
+  button, select { min-height: 36px; }
+  input[type='text'], input[type='number'], select { font-size: 16px; } /* no iOS zoom */
+
+  #app-header { padding: 6px 8px; gap: 6px; }
+  #app-header .logo span, #save-status, #btn-terminal, #btn-preview-desktop,
+  #btn-preview-mobile, #btn-preview-only { display: none; }
+  #project-name-display {
+    flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; padding: 6px 6px;
+  }
+  .header-actions { margin-left: 0; gap: 2px; flex: none; }
+  .header-actions button { padding: 8px 10px; min-width: 40px; justify-content: center; }
+  .header-actions button svg { width: 18px; height: 18px; }
+
+  /* Panels fill the screen; terminal only appears on its tab */
+  #workspace { flex: 1 1 0; min-height: 0; }
+  #terminal-panel:not(.mobile-active) { display: none !important; }
+  #terminal-panel.mobile-active { display: flex !important; flex: 1 1 0; height: auto; min-height: 0; border-top: 0; }
+  #app.term-active #workspace { display: none; }
+  #terminal-host { padding: 4px 6px; }
+  #btn-terminal-close { display: none; }
+
+  .panel-header { min-height: 44px; padding: 4px 8px; }
+  .panel-header .icon-btn { padding: 10px; min-width: 44px; min-height: 44px; justify-content: center; }
+  .panel-header .icon-btn svg { width: 20px; height: 20px; }
+
+  #tabs { min-height: 42px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tab { padding: 8px 12px; font-size: 13px; }
+  .tab .tab-close { padding: 6px; }
+  #file-tree { padding: 6px; }
+  .tree-folder, .tree-file { padding: 11px 10px; font-size: 14.5px; }
+  .tree-row-actions { gap: 4px; }
+  .tree-row-actions button { padding: 8px; min-width: 36px; min-height: 36px; justify-content: center; }
+  .tree-row-actions button svg { width: 18px; height: 18px; }
+  .tree-children { padding-left: 12px; }
+
+  #preview-frame-wrap { overflow: hidden; }
+  #preview-frame.device-mobile, #preview-frame.device-desktop { width: 100%; border: 0; }
+  #console-output { max-height: 35%; }
+
+  #editor-host .cm-editor { font-size: 15px; }
+  #editor-host .cm-scroller { -webkit-overflow-scrolling: touch; }
+
+  #mobile-keys {
+    display: flex; flex: none; gap: 4px; padding: 4px 6px; overflow-x: auto;
+    background: var(--bg-panel); border-top: 1px solid var(--border); scrollbar-width: none;
+  }
+  #mobile-keys button {
+    flex: none; min-width: 40px; min-height: 38px; padding: 4px 10px;
+    justify-content: center; font-family: var(--font-mono); font-size: 15px;
+  }
+
+  #mobile-tabbar { padding-bottom: env(safe-area-inset-bottom); }
+  #mobile-tabbar button { min-height: 52px; font-size: 11px; }
+
+  #settings-drawer { width: 100vw; border-left: 0; padding-bottom: env(safe-area-inset-bottom); }
+  .settings-header { padding: 14px 14px; }
+  .settings-header .icon-btn { padding: 10px; }
+  .settings-body { padding: 4px 14px 24px; -webkit-overflow-scrolling: touch; }
+  .setting-row { padding: 12px 0; flex-wrap: wrap; }
+  .setting-row select, .setting-row input[type='number'] { max-width: 55%; min-height: 40px; }
+  .setting-row input[type='checkbox'] { width: 24px; height: 24px; }
+  .setting-row input[type='color'] { width: 56px; height: 40px; }
+  .settings-actions button { flex: 1 1 100%; justify-content: center; min-height: 44px; }
+
+  .modal { padding: 18px; }
+  .modal-actions button { min-height: 42px; min-width: 84px; justify-content: center; }
+  .toasts { bottom: calc(70px + env(safe-area-inset-bottom)); max-width: 92vw; }
+}
+
+/* Landscape phones: keep compact */
+@media (max-width: 900px) and (max-height: 480px) and (orientation: landscape) {
+  #mobile-tabbar button { min-height: 40px; flex-direction: row; justify-content: center; }
+  #mobile-keys button { min-height: 32px; }
+}
