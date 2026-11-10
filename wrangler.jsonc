@@ -1,0 +1,25 @@
+/**
+ * Cloudflare Wrangler configuration for Web Studio.
+ *
+ * Web Studio is a static, client-side application. It is deployed as a
+ * Cloudflare Worker that serves the Vite production build (`dist/`) through
+ * the Workers Static Assets feature. No database, KV, R2, D1 or Durable
+ * Objects are required, and no secrets are configured.
+ *
+ * Schema reference:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "web-studio",
+  "main": "worker.js",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    // Vite production output directory
+    "directory": "./dist",
+    // Binding used by worker.js to serve the static assets
+    "binding": "ASSETS",
+    // SPA-style fallback: unknown paths serve index.html
+    "not_found_handling": "single-page-application"
+  }
+}
