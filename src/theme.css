@@ -1,0 +1,156 @@
+/*
+ * theme.css — application theme system.
+ *
+ * Every theme defines the same set of CSS custom properties on
+ * :root[data-theme="..."]. Components only ever reference the variables,
+ * so adding a theme means adding one attribute block.
+ *
+ * The accent color (--accent) is overridden at runtime from Settings via an
+ * inline style on document.documentElement.
+ */
+
+:root {
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'Fira Code', SFMono-Regular, Menlo, Consolas, monospace;
+  --transition: 140ms ease;
+  --accent: #4f8cff;
+  --accent-contrast: #ffffff;
+}
+
+/* ---------------- Dark (default) ---------------- */
+:root[data-theme='dark'] {
+  --bg: #11151c;
+  --bg-panel: #171c26;
+  --bg-elevated: #1d2430;
+  --bg-input: #10141b;
+  --border: #2a3242;
+  --text: #d7dae0;
+  --text-muted: #8b93a3;
+  --heading: #f0f2f5;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --danger: #e5484d;
+  --success: #46a758;
+  --warning: #f5a623;
+  color-scheme: dark;
+}
+
+/* ---------------- Light ---------------- */
+:root[data-theme='light'] {
+  --bg: #f5f6f8;
+  --bg-panel: #ffffff;
+  --bg-elevated: #eef0f4;
+  --bg-input: #ffffff;
+  --border: #d9dee6;
+  --text: #2b3240;
+  --text-muted: #6b7280;
+  --heading: #14181f;
+  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --danger: #d13438;
+  --success: #1f883d;
+  --warning: #b8860b;
+  color-scheme: light;
+}
+
+/* ---------------- Midnight ---------------- */
+:root[data-theme='midnight'] {
+  --bg: #04070f;
+  --bg-panel: #080d18;
+  --bg-elevated: #0d1424;
+  --bg-input: #060a13;
+  --border: #17223b;
+  --text: #c9d4ea;
+  --text-muted: #64749b;
+  --heading: #e8eefc;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+  --danger: #ef4e6a;
+  --success: #2fbf71;
+  --warning: #f0b429;
+  color-scheme: dark;
+}
+
+/* ---------------- Dracula ---------------- */
+:root[data-theme='dracula'] {
+  --bg: #282a36;
+  --bg-panel: #2d2f3d;
+  --bg-elevated: #343746;
+  --bg-input: #21222c;
+  --border: #44475a;
+  --text: #f8f8f2;
+  --text-muted: #9ca0b0;
+  --heading: #ff79c6;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --danger: #ff5555;
+  --success: #50fa7b;
+  --warning: #ffb86c;
+  color-scheme: dark;
+}
+
+/* ---------------- Nord ---------------- */
+:root[data-theme='nord'] {
+  --bg: #2e3440;
+  --bg-panel: #333b4a;
+  --bg-elevated: #3b4252;
+  --bg-input: #272c36;
+  --border: #4c566a;
+  --text: #d8dee9;
+  --text-muted: #8895ad;
+  --heading: #88c0d0;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --danger: #bf616a;
+  --success: #a3be8c;
+  --warning: #ebcb8b;
+  color-scheme: dark;
+}
+
+/* ---------------- Monokai ---------------- */
+:root[data-theme='monokai'] {
+  --bg: #272822;
+  --bg-panel: #2d2e27;
+  --bg-elevated: #383931;
+  --bg-input: #1f201a;
+  --border: #49483e;
+  --text: #f8f8f2;
+  --text-muted: #a2a291;
+  --heading: #a6e22e;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --danger: #f92672;
+  --success: #a6e22e;
+  --warning: #e6db74;
+  color-scheme: dark;
+}
+
+/* ---------------- Rose Pine ---------------- */
+:root[data-theme='rosepine'] {
+  --bg: #191724;
+  --bg-panel: #1f1d2e;
+  --bg-elevated: #26233a;
+  --bg-input: #16141f;
+  --border: #312f47;
+  --text: #e0def4;
+  --text-muted: #908caa;
+  --heading: #ebbcba;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --danger: #eb6f92;
+  --success: #9ccfd8;
+  --warning: #f6c177;
+  color-scheme: dark;
+}
+
+/* ---------------- Solarized Dark ---------------- */
+:root[data-theme='solarized-dark'] {
+  --bg: #002b36;
+  --bg-panel: #04313c;
+  --bg-elevated: #0a3d49;
+  --bg-input: #01252e;
+  --border: #0e4a57;
+  --text: #b2c1c6;
+  --text-muted: #719077;
+  --heading: #93a1a1;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --danger: #dc322f;
+  --success: #859900;
+  --warning: #b58900;
+  color-scheme: dark;
+}

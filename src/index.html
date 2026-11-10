@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Web Studio — a lightweight browser-based web IDE for HTML, CSS and JavaScript." />
+  <title>Web Studio</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./theme.css" />
+  <script>
+    // Apply persisted theme + accent before first paint to avoid flashing.
+    (function () {
+      try {
+        var s = JSON.parse(localStorage.getItem('ws:settings') || '{}');
+        var theme = s.appTheme || 'dark';
+        if (theme === 'system') {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+        if (s.accent) {
+          document.documentElement.style.setProperty('--accent', s.accent);
+          document.documentElement.style.setProperty('--accent-contrast', '#ffffff');
+        }
+      } catch (e) { /* defaults are fine */ }
+    })();
+  </script>
+</head>
+<body>
+  <div id="app">
+    <!-- ===================== Header ===================== -->
+    <header id="app-header">
+      <div class="logo">
+        <i data-lucide="code-2"></i>
+        <span>Web Studio</span>
+      </div>
+
+      <span id="project-name-display" title="Click to rename project">No project</span>
+
+      <div class="header-actions">
+        <span id="save-status">Ready</span>
+        <button id="btn-new-project" class="ghost" title="New project">
+          <i data-lucide="file-plus-2"></i><span>New</span>
+        </button>
+        <button id="btn-import" class="ghost" title="Import project ZIP">
+          <i data-lucide="folder-up"></i><span>Import</span>
+        </button>
+        <button id="btn-export" class="ghost" title="Export project as ZIP">
+          <i data-lucide="folder-down"></i><span>Export</span>
+        </button>
+        <button id="btn-run" class="primary" title="Run (rebuild preview)">
+          <i data-lucide="play"></i><span>Run</span>
+        </button>
+        <button id="btn-terminal" class="ghost" title="Toggle terminal">
+          <i data-lucide="square-terminal"></i><span>Terminal</span>
+        </button>
+        <button id="btn-settings" class="ghost" title="Settings">
+          <i data-lucide="settings-2"></i><span>Settings</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===================== Workspace ===================== -->
+    <main id="workspace">
+      <!-- Explorer -->
+      <section id="explorer-panel" class="panel" style="width: 220px; flex: none;">
+        <div class="panel-header">
+          <span class="panel-title"><i data-lucide="folder-open"></i> Explorer</span>
+          <span class="spacer"></span>
+          <button id="btn-new-file" class="icon-btn" title="New file"><i data-lucide="file-plus"></i></button>
+          <button id="btn-new-folder" class="icon-btn" title="New folder"><i data-lucide="folder-plus"></i></button>
+        </div>
+        <nav id="file-tree" aria-label="Project files"></nav>
+      </section>
+
+      <div id="gutter-vertical" class="split-gutter" style="width: 5px; cursor: col-resize;"></div>
+
+      <!-- Editor -->
+      <section id="editor-panel" class="panel" style="flex: 1;">
+        <div id="tabs" role="tablist"></div>
+        <div id="editor-host"></div>
+      </section>
+
+      <div id="gutter-vertical-2" class="split-gutter" style="width: 5px; cursor: col-resize;"></div>
+
+      <!-- Preview -->
+      <section id="preview-panel" class="panel" style="width: 40%; flex: none;">
+        <div class="panel-header">
+          <span class="panel-title"><i data-lucide="monitor"></i> Preview</span>
+          <span class="spacer"></span>
+          <button id="btn-preview-desktop" class="icon-btn active" title="Desktop width">
+            <i data-lucide="monitor"></i>
+          </button>
+          <button id="btn-preview-mobile" class="icon-btn" title="Mobile width">
+            <i data-lucide="smartphone"></i>
+          </button>
+          <button id="btn-preview-only" class="icon-btn" title="Preview-only mode">
+            <i data-lucide="maximize-2"></i>
+          </button>
+          <button id="btn-preview-refresh" class="icon-btn" title="Refresh preview">
+            <i data-lucide="rotate-cw"></i>
+          </button>
+          <button id="btn-console" class="icon-btn" title="Toggle console output">
+            <i data-lucide="terminal"></i>
+          </button>
+        </div>
+        <div id="preview-frame-wrap">
+          <iframe id="preview-frame" class="device-desktop"
+            title="Live preview" sandbox="allow-scripts allow-forms allow-popups allow-modals"></iframe>
+        </div>
+        <div id="console-output" aria-label="Preview console output" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- ===================== Terminal ===================== -->
+    <section id="terminal-panel" class="panel" aria-label="Terminal">
+      <div class="panel-header">
+        <span class="panel-title"><i data-lucide="square-terminal"></i> Terminal</span>
+        <span class="spacer"></span>
+        <button id="btn-terminal-close" class="icon-btn" title="Close terminal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div id="terminal-host"></div>
+    </section>
+
+    <!-- ===================== Status bar ===================== -->
+    <footer id="status-bar">
+      <span id="status-cursor">Ln 1, Col 1</span>
+      <span id="status-project"></span>
+      <span id="status-storage" style="margin-left: auto;"></span>
+    </footer>
+
+    <!-- ===================== Mobile tab bar ===================== -->
+    <nav id="mobile-tabbar" aria-label="Mobile navigation">
+      <button data-mobile-tab="explorer" class="active"><i data-lucide="folder-open"></i>Files</button>
+      <button data-mobile-tab="editor"><i data-lucide="code-2"></i>Editor</button>
+      <button data-mobile-tab="preview"><i data-lucide="eye"></i>Preview</button>
+      <button data-mobile-tab="terminal"><i data-lucide="square-terminal"></i>Terminal</button>
+    </nav>
+  </div>
+
+  <!-- Settings drawer -->
+  <div id="settings-overlay"></div>
+  <aside id="settings-drawer" aria-label="Settings" aria-hidden="true">
+    <div class="settings-header">
+      <i data-lucide="settings-2"></i> Settings
+      <span class="spacer" style="margin-left:auto"></span>
+      <button id="btn-settings-close" class="icon-btn ghost" title="Close settings"><i data-lucide="x"></i></button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <h3>Appearance &amp; Themes</h3>
+        <div class="setting-row">
+          <label>Application theme
+            <span class="hint">Applied instantly, stored locally</span>
+          </label>
+          <select id="setting-app-theme">
+            <option value="system">System</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+            <option value="midnight">Midnight</option>
+            <option value="dracula">Dracula</option>
+            <option value="nord">Nord</option>
+            <option value="monokai">Monokai</option>
+            <option value="rosepine">Rose Pine</option>
+            <option value="solarized-dark">Solarized Dark</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Editor theme
+            <span class="hint">Independent of the app theme</span>
+          </label>
+          <select id="setting-editor-theme">
+            <option value="oneDark">One Dark</option>
+            <option value="dracula">Dracula</option>
+            <option value="monokai">Monokai</option>
+            <option value="nord">Nord</option>
+            <option value="solarizedDark">Solarized Dark</option>
+            <option value="githubLight">GitHub Light</option>
+            <option value="vscodeDark">VS Code Dark</option>
+            <option value="vscodeLight">VS Code Light</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Accent color</label>
+          <input type="color" id="setting-accent" value="#4f8cff" />
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Editor Preferences</h3>
+        <div class="setting-row">
+          <label>Font family</label>
+          <select id="setting-font-family">
+            <option value="'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">JetBrains Mono / default</option>
+            <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">System mono</option>
+            <option value="'Fira Code', monospace">Fira Code</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="Georgia, serif">Serif</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Font size</label>
+          <input type="number" id="setting-font-size" min="10" max="28" step="1" value="14" />
+        </div>
+        <div class="setting-row">
+          <label>Tab size</label>
+          <input type="number" id="setting-tab-size" min="2" max="8" step="2" value="2" />
+        </div>
+        <div class="setting-row">
+          <label>Word wrapping</label>
+          <input type="checkbox" id="setting-word-wrap" checked />
+        </div>
+        <div class="setting-row">
+          <label>Indentation
+            <span class="hint">Indent with spaces or tabs</span>
+          </label>
+          <select id="setting-indent">
+            <option value="spaces">Spaces</option>
+            <option value="tabs">Tabs</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Workspace</h3>
+        <div class="setting-row">
+          <label>Auto-run preview
+            <span class="hint">Update preview as you type (debounced)</span>
+          </label>
+          <input type="checkbox" id="setting-auto-run" checked />
+        </div>
+        <div class="setting-row">
+          <label>Show terminal by default</label>
+          <input type="checkbox" id="setting-terminal-visible" />
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Storage &amp; Projects</h3>
+        <div class="setting-row">
+          <label>Autosave
+            <span class="hint">Save project automatically (debounced)</span>
+          </label>
+          <input type="checkbox" id="setting-autosave" checked />
+        </div>
+        <div class="setting-row">
+          <label>Local storage usage
+            <span class="hint" id="storage-info">…</span>
+          </label>
+          <button id="btn-refresh-storage" class="ghost">Refresh</button>
+        </div>
+        <div class="settings-actions">
+          <button id="btn-settings-export"><i data-lucide="folder-down"></i> Export project ZIP</button>
+          <button id="btn-settings-import"><i data-lucide="folder-up"></i> Import ZIP</button>
+        </div>
+        <div class="settings-actions">
+          <button id="btn-clear-data" class="danger"><i data-lucide="trash-2"></i> Clear all local project data</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Modal -->
+  <div id="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 id="modal-title">Title</h3>
+      <p id="modal-message"></p>
+      <input type="text" id="modal-input" style="display:none" />
+      <div class="modal-actions">
+        <button id="modal-cancel">Cancel</button>
+        <button id="modal-ok" class="primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="zip-import-input" accept=".zip,application/zip" style="display: none" />
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
